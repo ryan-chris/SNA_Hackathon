@@ -9,7 +9,7 @@ def web_spider_out(max_page):
     :return: title, view, government, category
     '''
 
-    driver = webdriver.Chrome('/Users/Chris/Downloads/chromedriver')
+    driver = webdriver.Chrome('/Users/interx/Desktop/Hackathon/chromedriver') # path of chromedriver
     page = 1
     url = 'https://www.data.go.kr/search/index.do'
     driver.get(url)
