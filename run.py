@@ -51,7 +51,7 @@ def web_spider_outpage(max_page):
 
 def web_spider_detail_link(max_page):
     '''
-    crawler for detail of Open API list of data.go.kr
+    crawler for list of link on data.go.kr
     :param max_page: the end of page
     :return: data list
     '''
@@ -77,7 +77,7 @@ def web_spider_detail_link(max_page):
             )
 
             for link in links:
-                print('https://www.data.go.kr' + link.get('href'))
+                #print('https://www.data.go.kr' + link.get('href'))
                 link_url = 'https://www.data.go.kr' + link.get('href')
                 link_list.append(link_url)
 
@@ -94,10 +94,40 @@ def web_spider_detail_link(max_page):
     return link_list
 
 
-def web_spider_inpage():
+def web_spider_inpage(link_list):
+    '''
+    crawler for detail corresponding to the web_spider_outpage function.
+    :param link_list: each url(detail page)
+    :return: each attributes list in page
+    '''
 
+    driver = webdriver.Chrome('/Users/interx/Desktop/Hackathon/chromedriver')
 
-    return None
+    data_list = []
+
+    try:
+        for link in link_list:
+            print(link)
+            driver.get(link)
+            sleep(1)
+
+            dataitems = driver.find_elements_by_css_selector('.content')
+            for item in dataitems:
+                temp = (item.find_element_by_css_selector('.dataset-detail > div > h1 > div.title').text,
+                        item.find_element_by_css_selector('.dataset-detail > div > h4').text,
+                        item.find_element_by_css_selector('.dataset-items > div.detail-wrapper.clearfix.multiple > div.detail-viewer > div:nth-child(1) > table > tbody > tr:nth-child(5) > td:nth-child(2)').text,
+                        item.find_element_by_css_selector('.dataset-items > div.detail-wrapper.clearfix.multiple > div.detail-viewer > div:nth-child(1) > table > tbody > tr:nth-child(5) > td:nth-child(4)').text,
+                        item.find_element_by_css_selector('.dataset-items > div.detail-wrapper.clearfix.multiple > div.detail-viewer > div:nth-child(1) > table > tbody > tr:nth-child(8) > td:nth-child(2)').text,
+                        item.find_element_by_css_selector('.dataset-items > div.detail-wrapper.clearfix.multiple > div.detail-viewer > div:nth-child(1) > table > tbody > tr:nth-child(8) > td:nth-child(4)').text,
+                        [elem.text for elem in item.find_elements_by_css_selector('.dataset-items > div.detail-wrapper.clearfix.multiple > div.detail-viewer > div.detail-option-info > div#functions > ul > li > a')])
+
+                data_list.append(temp)
+
+    finally:
+            driver.close()
+            driver.quit()
+
+    return data_list
 
 
 def outpage_storeCSV(crawl_data_list):
@@ -125,6 +155,17 @@ if __name__=='__main__':
 
     #outpage_storeCSV(datascrap)
 
-    # test02: in-page
-    datascrap = web_spider_detail_link(2)  # scrapping website
+    # test02: creating a link list
+    #links = web_spider_detail_link(2)
+    #print(links, len(links))
+
+
+    # test03: in-page
+    test_link = ['https://www.data.go.kr/dataset/15000124/openapi.do', 'https://www.data.go.kr/dataset/15000099/openapi.do',
+                 'https://www.data.go.kr/dataset/15012005/openapi.do', 'https://www.data.go.kr/dataset/15000496/openapi.do',
+                 'https://www.data.go.kr/dataset/15003169/openapi.do', 'https://www.data.go.kr/dataset/15000268/openapi.do',
+                 'https://www.data.go.kr/dataset/15000515/openapi.do', 'https://www.data.go.kr/dataset/15000581/openapi.do',
+                 'https://www.data.go.kr/dataset/15012420/openapi.do', 'https://www.data.go.kr/dataset/15000495/openapi.do']
+
+    datascrap = web_spider_inpage(test_link)  # scrapping website
     print(datascrap)
