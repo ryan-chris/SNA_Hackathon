@@ -2,12 +2,12 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from time import sleep
 import csv
-import sys
+import requests
 
 def web_spider_outpage(max_page):
     '''
     crawler for Open API list of data.go.kr
-    :param max_page:
+    :param max_page: the end of page
     :return: list
     '''
 
@@ -21,74 +21,87 @@ def web_spider_outpage(max_page):
     driver.find_element_by_xpath('//*[@id="openapiTab"]/a/span').click()
 
     while page < max_page:
-        print('%s page', page)
 
-        sleep(2)
+        try:
+            print('%s page', page)
 
-        dataitems = driver.find_elements_by_css_selector('.data-item')
-        for item in dataitems:
-            temp = (item.find_element_by_css_selector('.data-title>a').text,
-                    item.find_elements_by_css_selector('.data-title>span')[0].text,
-                    item.find_elements_by_css_selector('.data-title>span')[1].text,
-                    item.find_elements_by_css_selector('.data-meta>span')[1].text,
-                    item.find_element_by_css_selector('span').text)
+            sleep(2)
 
-            data_list.append(temp)
+            dataitems = driver.find_elements_by_css_selector('.data-item')
+            for item in dataitems:
+                temp = (item.find_element_by_css_selector('.data-title>a').text,
+                        item.find_elements_by_css_selector('.data-title>span')[0].text,
+                        item.find_elements_by_css_selector('.data-title>span')[1].text,
+                        item.find_elements_by_css_selector('.data-meta>span')[1].text,
+                        item.find_element_by_css_selector('span').text)
 
-        # move to next page
-        page += 1
-        sleep(3)
-        driver.find_element_by_xpath('// *[ @ id = "search_more_openapi"] / div / ul / li[' + str(page+2) +'] / a').click()
+                data_list.append(temp)
+
+            # move to next page
+            page += 1
+            sleep(3)
+            driver.find_element_by_xpath('// *[ @ id = "search_more_openapi"] / div / ul / li[' + str(page+2) +'] / a').click()
+
+        finally:
+            driver.close()
+            driver.quit()
 
     return data_list
 
-def web_spider_inpage(max_page):
+
+def web_spider_detail_link(max_page):
     '''
     crawler for detail of Open API list of data.go.kr
-    :param max_page:
-    :return:
+    :param max_page: the end of page
+    :return: data list
     '''
-    driver = webdriver.Chrome('/Users/Chris/Downloads/chromedriver')
+    driver = webdriver.Chrome('/Users/interx/Desktop/Hackathon/chromedriver')
 
     page = 1
     url = 'https://www.data.go.kr/search/index.do'
     driver.get(url)
     driver.find_element_by_xpath('//*[@id="openapiTab"]/a/span').click()
 
-    data_list = []
+    link_list = []
     while page < max_page:
 
-        sleep(2)
+        try:
+            sleep(2)
 
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
 
-        # openapi-list-wrapper > div:nth-child(1) > div.data-title > a
-        links = soup.select(
-            'div > div.data-title > a'
-        )
+            # openapi-list-wrapper > div:nth-child(1) > div.data-title > a
+            links = soup.select(
+                'div > div.data-title > a'
+            )
 
-        for link in links:
-            print('https://www.data.go.kr' + link.get('href'))
-            driver.get('https://www.data.go.kr' + link.get('href'))
-            sleep(1)
+            for link in links:
+                print('https://www.data.go.kr' + link.get('href'))
+                link_url = 'https://www.data.go.kr' + link.get('href')
+                link_list.append(link_url)
 
-            subdataitems = driver.find_elements_by_css_selector('.content')
-            for item in subdataitems:
-                temp = (item.find_element_by_css_selector('.dataset-detail>.detail-infos>.dataset-title>.title').text,
-                        item.find_element_by_css_selector('h4.dataset-sub-title').text, # .dataset-detail>.detail-infos>.dataset-sub-title
-                        item.find_element_by_css_selector('.functions>.api-functions>a').text)
+                sleep(0.5)
 
-                data_list.append(temp)
+            # move to next page
+            page += 1
+            sleep(3)
 
-        # move to next page
-        page += 1
-        sleep(3)
+        finally:
+            driver.close()
+            driver.quit()
 
-    return data_list
+    return link_list
+
+
+def web_spider_inpage():
+
+
+    return None
+
 
 def outpage_storeCSV(crawl_data_list):
-    csvFile = open("../Data.csv", "wt", encoding='euc-kr')
+    csvFile = open("../api_list_data.csv", "wt", encoding='euc-kr')
     writer = csv.writer(csvFile)
 
     try:
@@ -106,7 +119,12 @@ def outpage_storeCSV(crawl_data_list):
 
 if __name__=='__main__':
 
-    datascrap = web_spider_outpage(2) # scrapping website
-    print(datascrap)
+    # test01: out-page
+    #datascrap = web_spider_outpage(2) # scrapping website
+    #print(datascrap)
 
-    outpage_storeCSV(datascrap)
+    #outpage_storeCSV(datascrap)
+
+    # test02: in-page
+    datascrap = web_spider_detail_link(2)  # scrapping website
+    print(datascrap)
