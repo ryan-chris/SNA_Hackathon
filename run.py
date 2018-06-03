@@ -11,7 +11,7 @@ def web_spider_outpage(max_page):
     :return: list
     '''
 
-    driver = webdriver.Chrome('/Users/interx/Desktop/Hackathon/chromedriver')
+    driver = webdriver.Chrome('/Users/Chris/Downloads/chromedriver')
     page = 1
     url = 'https://www.data.go.kr/search/index.do'
     driver.get(url)
@@ -112,7 +112,11 @@ def outpage_storeCSV(crawl_data_list):
 
 
 def inpage_storeCSV(crawl_data_list):
+<<<<<<< HEAD
     csvFile = open("../api_detail_data.csv", "wt", encoding='utf-8', newline='')
+=======
+    csvFile = open("../api_detail_data.csv", encoding='utf-8', newline='')
+>>>>>>> 067bc0aa32293f86dcbb4401a12f54c3fdbeacac
     writer = csv.writer(csvFile)
 
     try:
@@ -133,6 +137,7 @@ def inpage_storeCSV(crawl_data_list):
 def main():
 
     # out-page result
+<<<<<<< HEAD
     outresult = web_spider_outpage(254)
 
     # Creating a links list
@@ -140,6 +145,13 @@ def main():
 
     # Store result to CSV file
     outpage_storeCSV(outresult)
+=======
+    outresult = web_spider_outpage(25)
+    outpage_storeCSV(outresult)
+
+    # collecting all links
+    links = web_spider_detail_link(254)
+>>>>>>> 067bc0aa32293f86dcbb4401a12f54c3fdbeacac
 
     # in-page result
     inresult = web_spider_inpage(links)
