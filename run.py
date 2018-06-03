@@ -11,7 +11,7 @@ def web_spider_outpage(max_page):
     :return: list
     '''
 
-    driver = webdriver.Chrome('/Users/interx/Desktop/Hackathon/chromedriver')
+    driver = webdriver.Chrome('/Users/Chris/Downloads/chromedriver')
     page = 1
     url = 'https://www.data.go.kr/search/index.do'
     driver.get(url)
@@ -41,15 +41,10 @@ def web_spider_outpage(max_page):
             sleep(1)
 
             if page == 11:
-                print('if page', page)
                 driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li[13]/a/i').click()
             elif page % 10 == 0 or page % 10 == 1:
-                print('elif page', page)
-                print('click path', page % 10 + 12)
                 driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li['+ str((page % 10)+12) +']/a').click()
             else:
-                print('else page', page)
-                print('click path', page % 10 + 2)
                 driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li['+ str((page % 10)+2) +']/a').click()
 
             sleep(1)
@@ -143,7 +138,7 @@ def web_spider_inpage(link_list):
 
 
 def outpage_storeCSV(crawl_data_list):
-    csvFile = open("../api_list_data.csv", "wt", encoding='euc-kr')
+    csvFile = open("../api_list_data.csv", "wt", encoding='utf-8', newline='')
     writer = csv.writer(csvFile)
 
     try:
@@ -159,7 +154,7 @@ def outpage_storeCSV(crawl_data_list):
         csvFile.close()
 
 def inpage_storeCSV(crawl_data_list):
-    csvFile = open("../api_detail_data.csv", "wt", encoding='euc-kr')
+    csvFile = open("../api_detail_data.csv", encoding='utf-8', newline='')
     writer = csv.writer(csvFile)
 
     try:
@@ -179,16 +174,16 @@ def inpage_storeCSV(crawl_data_list):
 
 def main():
     # out-page result
-    outresult = web_spider_outpage(14)
+    outresult = web_spider_outpage(25)
     outpage_storeCSV(outresult)
-    '''
+
     # collecting all links
     links = web_spider_detail_link(254)
 
     # in-page result for detail
     inresult = web_spider_inpage(links)
     inpage_storeCSV(inresult)
-    '''
+
 
 if __name__=='__main__':
 
