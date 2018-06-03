@@ -20,12 +20,11 @@ def web_spider_outpage(max_page):
 
     driver.find_element_by_xpath('//*[@id="openapiTab"]/a/span').click()
 
-    while page < max_page:
-
-        try:
+    try:
+        while page < max_page:
             print('%s page', page)
 
-            sleep(2)
+            sleep(3)
 
             dataitems = driver.find_elements_by_css_selector('.data-item')
             for item in dataitems:
@@ -39,12 +38,25 @@ def web_spider_outpage(max_page):
 
             # move to next page
             page += 1
-            sleep(3)
-            driver.find_element_by_xpath('// *[ @ id = "search_more_openapi"] / div / ul / li[' + str(page+2) +'] / a').click()
+            sleep(1)
 
-        finally:
-            driver.close()
-            driver.quit()
+            if page == 11:
+                print('if page', page)
+                driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li[13]/a/i').click()
+            elif page % 10 == 0 or page % 10 == 1:
+                print('elif page', page)
+                print('click path', page % 10 + 12)
+                driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li['+ str((page % 10)+12) +']/a').click()
+            else:
+                print('else page', page)
+                print('click path', page % 10 + 2)
+                driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li['+ str((page % 10)+2) +']/a').click()
+
+            sleep(1)
+
+    finally:
+        driver.close()
+        driver.quit()
 
     return data_list
 
@@ -146,18 +158,52 @@ def outpage_storeCSV(crawl_data_list):
     finally:
         csvFile.close()
 
+def inpage_storeCSV(crawl_data_list):
+    csvFile = open("../api_detail_data.csv", "wt", encoding='euc-kr')
+    writer = csv.writer(csvFile)
+
+    try:
+        for line in crawl_data_list:
+            service = line[0]
+            description = line[1]
+            register_date = line[2]
+            fixed_date = line[3]
+            team = line[4]
+            contact = line[5]
+            addin = line[6]
+            writer.writerow([service, description, register_date, fixed_date, team, contact, addin])
+
+    finally:
+        csvFile.close()
+
+
+def main():
+    # out-page result
+    outresult = web_spider_outpage(14)
+    outpage_storeCSV(outresult)
+    '''
+    # collecting all links
+    links = web_spider_detail_link(254)
+
+    # in-page result for detail
+    inresult = web_spider_inpage(links)
+    inpage_storeCSV(inresult)
+    '''
 
 if __name__=='__main__':
 
-    # test01: out-page
-    #datascrap = web_spider_outpage(2) # scrapping website
-    #print(datascrap)
+    main()
 
-    #outpage_storeCSV(datascrap)
+    '''
+    # test01: out-page
+    datascrap = web_spider_outpage(2) # scrapping website
+    print(datascrap)
+
+    outpage_storeCSV(datascrap)
 
     # test02: creating a link list
-    #links = web_spider_detail_link(2)
-    #print(links, len(links))
+    links = web_spider_detail_link(2)
+    print(links, len(links))
 
 
     # test03: in-page
@@ -169,3 +215,5 @@ if __name__=='__main__':
 
     datascrap = web_spider_inpage(test_link)  # scrapping website
     print(datascrap)
+    inpage_storeCSV(datascrap)
+    '''
