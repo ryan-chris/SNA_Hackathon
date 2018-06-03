@@ -32,7 +32,8 @@ def web_spider_outpage(max_page):
                         item.find_elements_by_css_selector('.data-title>span')[0].text,
                         item.find_elements_by_css_selector('.data-title>span')[1].text,
                         item.find_elements_by_css_selector('.data-meta>span')[1].text,
-                        item.find_element_by_css_selector('span').text)
+                        item.find_element_by_css_selector('span').text,
+                        item.find_element_by_css_selector('.data-title>a').get_attribute('href'))
 
                 data_list.append(temp)
 
@@ -41,15 +42,10 @@ def web_spider_outpage(max_page):
             sleep(1)
 
             if page == 11:
-                print('if page', page)
                 driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li[13]/a/i').click()
             elif page % 10 == 0 or page % 10 == 1:
-                print('elif page', page)
-                print('click path', page % 10 + 12)
                 driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li['+ str((page % 10)+12) +']/a').click()
             else:
-                print('else page', page)
-                print('click path', page % 10 + 2)
                 driver.find_element_by_xpath('//*[@id="search_more_openapi"]/div/ul/li['+ str((page % 10)+2) +']/a').click()
 
             sleep(1)
@@ -59,51 +55,6 @@ def web_spider_outpage(max_page):
         driver.quit()
 
     return data_list
-
-
-def web_spider_detail_link(max_page):
-    '''
-    crawler for list of link on data.go.kr
-    :param max_page: the end of page
-    :return: data list
-    '''
-    driver = webdriver.Chrome('/Users/interx/Desktop/Hackathon/chromedriver')
-
-    page = 1
-    url = 'https://www.data.go.kr/search/index.do'
-    driver.get(url)
-    driver.find_element_by_xpath('//*[@id="openapiTab"]/a/span').click()
-
-    link_list = []
-    while page < max_page:
-
-        try:
-            sleep(2)
-
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-
-            # openapi-list-wrapper > div:nth-child(1) > div.data-title > a
-            links = soup.select(
-                'div > div.data-title > a'
-            )
-
-            for link in links:
-                #print('https://www.data.go.kr' + link.get('href'))
-                link_url = 'https://www.data.go.kr' + link.get('href')
-                link_list.append(link_url)
-
-                sleep(0.5)
-
-            # move to next page
-            page += 1
-            sleep(3)
-
-        finally:
-            driver.close()
-            driver.quit()
-
-    return link_list
 
 
 def web_spider_inpage(link_list):
@@ -143,7 +94,7 @@ def web_spider_inpage(link_list):
 
 
 def outpage_storeCSV(crawl_data_list):
-    csvFile = open("../api_list_data.csv", "wt", encoding='euc-kr')
+    csvFile = open("../api_list_data.csv", "wt", encoding='utf-8', newline='')
     writer = csv.writer(csvFile)
 
     try:
@@ -153,13 +104,15 @@ def outpage_storeCSV(crawl_data_list):
             num_application = line[2].split(':')[1].strip().replace(',', '')
             organization = line[3].split(':')[1].strip()
             category = line[4]
-            writer.writerow([name, int(view), int(num_application), organization, category])
+            url = line[5]
+            writer.writerow([name, int(view), int(num_application), organization, category, url])
 
     finally:
         csvFile.close()
 
+
 def inpage_storeCSV(crawl_data_list):
-    csvFile = open("../api_detail_data.csv", "wt", encoding='euc-kr')
+    csvFile = open("../api_detail_data.csv", "wt", encoding='utf-8', newline='')
     writer = csv.writer(csvFile)
 
     try:
@@ -178,17 +131,22 @@ def inpage_storeCSV(crawl_data_list):
 
 
 def main():
-    # out-page result
-    outresult = web_spider_outpage(14)
-    outpage_storeCSV(outresult)
-    '''
-    # collecting all links
-    links = web_spider_detail_link(254)
 
-    # in-page result for detail
+    # out-page result
+    outresult = web_spider_outpage(254)
+
+    # Creating a links list
+    links = [link[-1] for link in outresult]
+
+    # Store result to CSV file
+    outpage_storeCSV(outresult)
+
+    # in-page result
     inresult = web_spider_inpage(links)
+
+    # Store result to CSV file
     inpage_storeCSV(inresult)
-    '''
+
 
 if __name__=='__main__':
 
